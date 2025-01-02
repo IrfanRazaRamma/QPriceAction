@@ -19,8 +19,7 @@ dimod: Provides functionality for creating and solving the Binary Quadratic Mode
 dwave-system: Contains the sampler for interacting with the D-Wave quantum computer.
 You can install the required libraries using pip:
 
-bash
-Copy code
+
 pip install pandas dimod dwave-system
 Setup
 D-Wave Access:
@@ -34,8 +33,7 @@ How It Works
 1. Data Setup
 The first step is to prepare the data. In this example, we simulate a dataset containing stock prices with timestamps (Date) and closing prices (Close). We assume "Buy" signals are triggered for every odd index in the data. No "Sell" signals are considered for simplicity.
 
-python
-Copy code
+
 data = {
     "Date": ["2024.03.05 16:45", "2024.03.05 17:00", ...],
     "Close": [8.94, 8.96, 8.55, 8.46, 8.49, 8.59, ...],
@@ -46,8 +44,8 @@ The core of the optimization is the creation of a Binary Quadratic Model (BQM). 
 "Buy" signals are assigned a negative weight (reward for buying).
 "Sell" signals are assigned a positive weight (penalty for selling).
 Interaction terms between "Buy" and "Sell" are added to avoid conflicting actions.
-python
-Copy code
+
+
 bqm = dimod.BinaryQuadraticModel.empty(vartype='BINARY')
 
 # Adding Buy/Sell signals to the BQM
@@ -64,15 +62,13 @@ for i in range(1, len(df)):
 3. Solving the BQM with Quantum Sampling
 Once the BQM is set up, we use D-Wave’s EmbeddingComposite and DWaveSampler to solve it. This leverages quantum optimization to find the best combination of "Buy" signals that maximize the reward (minimize the cost) for purchasing stocks.
 
-python
-Copy code
+
 sampler = EmbeddingComposite(DWaveSampler())
 response = sampler.sample(bqm, num_reads=100)
 4. Extracting Optimal Buy Prices
 After obtaining the quantum solution, we extract the optimal buy prices by iterating through the samples and identifying which buy signals were active (value = 1).
 
-python
-Copy code
+
 def get_optimal_buy_prices(response, df):
     optimal_buy_prices = []
     for sample, energy in response.data(['sample', 'energy']):
@@ -81,11 +77,11 @@ def get_optimal_buy_prices(response, df):
                 index = int(key.split('_')[1])
                 optimal_buy_prices.append(df['Close'].iloc[index])
     return optimal_buy_prices
+    
 5. Result
 The program calculates and outputs the most optimal buy price based on the quantum optimization results, as well as the lowest price for entry.
 
-python
-Copy code
+
 optimal_buy_prices = get_optimal_buy_prices(response, df)
 best_entry_price = min(optimal_buy_prices)
 print(f"Optimal Buy Prices: {optimal_buy_prices}")
@@ -93,8 +89,7 @@ print(f"The optimal entry price to buy is: {best_entry_price}")
 Output
 When you run the script, it will print the optimal buy prices and the best entry price based on the quantum optimization process.
 
-vbnet
-Copy code
+
 Optimal Buy Prices: [8.96, 8.46, 8.53, 8.71, 8.47]
 The optimal entry price to buy is: 8.46
 This output indicates the best prices at which to make your buy decision, maximizing the opportunity for profit.
@@ -106,6 +101,7 @@ Future Work
 Incorporating Sell Signals: This model currently ignores sell signals. Future work could include adding sell signal logic to create a full buy/sell strategy.
 Real-World Data: The current data is simulated. Real-world stock market data could be incorporated to apply this strategy to live trading.
 More Complex Models: Additional financial indicators could be included in the BQM to improve decision-making.
+
 License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
